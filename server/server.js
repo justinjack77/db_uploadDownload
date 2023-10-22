@@ -12,6 +12,14 @@ const app = express();
 app.use(express.json());
 app.use(cors()); 
 
+
+const db = mysql.createConnection({
+    host: "localhost",
+    user: "root",
+    password: "",
+    database: "filedb",
+})
+
 app.get("/api",(req,res)=>{
     res.json({
         "users": {
