@@ -1,13 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import api from './api/api'
 import axios from 'axios';
+import UploadFile from './Upload/UploadFile';
+import FileList from './Files/FileList';
 
 const App = () => {
   const [users, setUsers] = useState({});
 
   useEffect(() => {
     // Fetch data from the API endpoint
-    api.get('/api')
+    api.get('/users')
       .then(response => {
         setUsers(response.data.users);
       })
@@ -26,6 +28,13 @@ const App = () => {
           </li>
         ))}
       </ul>
+      <UploadFile/>
+      <hr/><hr/>
+      <br/>
+      <div>
+        <FileList/>
+      </div>
+      
     </div>
   );
 };
