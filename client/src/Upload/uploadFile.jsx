@@ -55,7 +55,7 @@ const UploadFile = () => {
       <button onClick={handleUpload}>Upload</button>
       <hr />
       <br />
-      <img src={`/worker/images/` + data.image_name} alt="aaaa" />
+      {/* <img src={`/worker/images/` + data.image_name} alt="aaaa" /> */}
 
     </div>
   );
