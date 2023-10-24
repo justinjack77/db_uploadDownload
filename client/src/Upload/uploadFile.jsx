@@ -8,12 +8,22 @@ const UploadFile = () => {
   const [data, setData] = useState([]);
 
 
+  // useEffect(() => {
+  //   api
+  //     .get("/")
+  //     .then((res) => {
+  //       setData(res.data[3]);
+  //       console.log(res);
+  //     })
+  //     .catch((err) => console.log(err));
+  // }, []);
   useEffect(() => {
     api
       .get("/")
       .then((res) => {
-        setData(res.data[8]);
-        console.log(res);
+        const lastPicture = res.data[res.data.length - 1]; // Get the last element from the response data
+        setData(lastPicture); // Update state with the last picture
+        console.log(lastPicture); // Log the last picture to the console
       })
       .catch((err) => console.log(err));
   }, []);
@@ -27,7 +37,7 @@ const UploadFile = () => {
       const formData = new FormData();
       formData.append("image_name", file);
 
-      // Replace 'YOUR_UPLOAD_API_ENDPOINT' with the actual endpoint where you handle file uploads on the server.
+      //'API_ENDPOINT' with the actual endpoint where you handle file uploads on the server.
       api
         .post("/upload", formData)
         .then((response) => {
@@ -55,7 +65,7 @@ const UploadFile = () => {
       <button onClick={handleUpload}>Upload</button>
       <hr />
       <br />
-      {/* <img src={`/worker/images/` + data.image_name} alt="aaaa" /> */}
+      <img src={`/worker/images/` + data.image_name} alt="aaaa" />
 
     </div>
   );

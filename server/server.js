@@ -21,19 +21,125 @@ const db = mysql.createConnection({
     database: "file_db",
 })
 
+// const storage = multer.diskStorage({
+//     destination: (req, file,cb) => {
+//         cb(null,'public/worker/images')
+//     },
+//     filename: (req, file, cb) => {
+//         const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+//         cb(null, file.fieldname + '-' + uniqueSuffix + path.extname(file.originalname));
+//     }
+// })
+
+// const storage = multer.diskStorage({
+//     destination: (req, file, cb) => {
+//         let folder;
+//         if (file.mimetype === 'application/pdf') {
+//             folder = 'public/worker/passport/pdf';
+//         } else if (file.mimetype === 'application/msword' || file.mimetype === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document') {
+//             folder = 'public/worker/passport/doc';
+//         } else if (file.mimetype === 'image/png' || file.mimetype === 'image/jpeg') {
+//             folder = 'public/worker/passport/images';
+//         } else {
+//             folder = 'public/worker/passport/other';
+//         }
+//         cb(null, folder);
+//     },
+//     filename: (req, file, cb) => {
+//         const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+//         cb(null, file.fieldname + '-' + uniqueSuffix + path.extname(file.originalname));
+//     }
+// });
+
 const storage = multer.diskStorage({
-    destination: (req, file,cb) => {
-        cb(null,'public/worker/images')
+    destination: (req, file, cb) => {
+        let folder;
+        let subfolder;
+        switch (file.mimetype) {
+            case 'application/pdf':
+                subfolder = 'pdf';
+                break;
+            case 'application/msword':
+            case 'application/vnd.openxmlformats-officedocument.wordprocessingml.document':
+                subfolder = 'doc';
+                break;
+            case 'image/png':
+            case 'image/jpeg':
+                subfolder = 'images';
+                break;
+            default:
+                subfolder = 'other';
+        }
+        switch (req.body.documentType) {
+            case 'passport':
+                folder = 'public/worker/passport/';
+                break;
+            case 'permit':
+                folder = 'public/worker/permit/';
+                break;
+            case 'typhoid':
+                folder = 'public/worker/typhoid/';
+                break;
+            case 'medical':
+                folder = 'public/worker/medical/';
+                break;
+            case 'supportingDocument':
+                folder = 'public/worker/supporting/';
+                break;
+            default:
+                folder = 'public/worker/other/';
+        }
+        cb(null, folder + subfolder);
     },
     filename: (req, file, cb) => {
         const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
         cb(null, file.fieldname + '-' + uniqueSuffix + path.extname(file.originalname));
     }
-})
+});
+
 
 const upload = multer({
     storage: storage
 })
+
+app.post("/upload", upload.single('image_name'), (req, res) => {
+    try {
+        console.log(req.file);
+
+        // Use req.file.filename to get the generated filename
+        const image_name = req.file.filename;
+        
+        // Use req.file.mimetype to get the file type
+        const type = req.file.mimetype;
+
+        // Use the current date/time for the date column
+        const date = new Date();
+
+        // Logic to determine folder and subfolder based on file type and document type
+        let folder;
+        let subfolder;
+
+        // Determine folder and subfolder based on file type and document type
+        // ... (Your logic to determine folder and subfolder goes here)
+
+        // Assuming your file table has columns: id, image_name, type, date, folder, subfolder
+        const sql = "INSERT INTO file (image_name, type, date, folder, subfolder) VALUES (?, ?, ?, ?, ?)";
+
+        db.query(sql, [image_name, type, date, folder, subfolder], (err, result) => {
+            if (err) {
+                console.error('Error inserting data: ' + err.message);
+                return res.status(500).json({ Message: "Error" });
+            } else {
+                console.log('Data inserted successfully.');
+                return res.status(200).json({ Status: "Success" });
+            }
+        });
+    } catch (error) {
+        console.error('Error uploading file: ' + error.message);
+        return res.status(500).json({ Message: "Error" });
+    }
+});
+
 
 // app.post("/upload",upload.single('image_name'),(req,res)=>{
 //     console.log(req.file);
@@ -50,31 +156,31 @@ const upload = multer({
 // })
 
 /// upload new image
-app.post("/upload", upload.single('image_name'), (req, res) => {
-    try {
-        console.log(req.file);
-        const { originalname, mimetype } = req.file;
-        const image_name = req.file.filename; // Use req.file.filename to get the generated filename
-        const type = mimetype; // Use req.file.mimetype to get the file type
-        const date = new Date(); // Use the current date/time for the date column
+// app.post("/upload", upload.single('image_name'), (req, res) => {
+//     try {
+//         console.log(req.file);
+//         const { originalname, mimetype } = req.file;
+//         const image_name = req.file.filename; // Use req.file.filename to get the generated filename
+//         const type = mimetype; // Use req.file.mimetype to get the file type
+//         const date = new Date(); // Use the current date/time for the date column
 
-        // Assuming your file table has columns: id, image_name, type, date
-        const sql = "INSERT INTO file (image_name, type, date) VALUES (?, ?, ?)";
+//         // Assuming your file table has columns: id, image_name, type, date
+//         const sql = "INSERT INTO file (image_name, type, date) VALUES (?, ?, ?)";
 
-        db.query(sql, [image_name, type, date], (err, result) => {
-            if (err) {
-                console.error('Error inserting data: ' + err.message);
-                return res.status(500).json({ Message: "Error" });
-            } else {
-                console.log('Data inserted successfully.');
-                return res.status(200).json({ Status: "Success" });
-            }
-        });
-    } catch (error) {
-        console.error('Error uploading file: ' + error.message);
-        return res.status(500).json({ Message: "Error" });
-    }
-});
+//         db.query(sql, [image_name, type, date], (err, result) => {
+//             if (err) {
+//                 console.error('Error inserting data: ' + err.message);
+//                 return res.status(500).json({ Message: "Error" });
+//             } else {
+//                 console.log('Data inserted successfully.');
+//                 return res.status(200).json({ Status: "Success" });
+//             }
+//         });
+//     } catch (error) {
+//         console.error('Error uploading file: ' + error.message);
+//         return res.status(500).json({ Message: "Error" });
+//     }
+// });
 
 ///
 //get image from database
@@ -171,6 +277,6 @@ app.get("/users",(req,res)=>{
     )
 })
 
-app.listen(5000,()=> {
-    console.log("Server is runing port 5000....")
+app.listen(5001,()=> {
+    console.log("Server is runing port 5001....")
 })
