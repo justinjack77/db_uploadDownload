@@ -7,18 +7,18 @@ const cors = require('cors');
 const app = express();
 const port = 5001;
 
-// Create a MySQL connection
-const connection = mysql.createConnection({
-    host: 'localhost',
-    user: 'root',
-    password: '',
-    database: 'file_db'
-});
+// // Create a MySQL connection
+// const connection = mysql.createConnection({
+//     host: 'localhost',
+//     user: 'root',
+//     password: '',
+//     database: 'file_db'
+// });
 
-connection.connect();
+// connection.connect();
 
 // Create a MySQL connection pool
-const pool = mysql.createPool({
+const connection = mysql.createPool({
     host: 'localhost',
     user: 'root',
     password: '',
@@ -26,17 +26,17 @@ const pool = mysql.createPool({
   });
   
   // Wait for the connection to be established
-  pool.getConnection((err, connection) => {
+  connection.getConnection((err, conn) => {
     if (err) {
       console.error('Error connecting to database:', err);
     } else {
       console.log('Connected to database');
   
       // Set the pool to the global scope after successful connection
-      global.pool = pool;
+      global.connection = connection;
   
       // Release the connection to the pool after setting it to the global scope
-      connection.release();
+      conn.release();
     }
   });
 
@@ -46,7 +46,7 @@ app.get('/download/:WorkerId/:DocumentClass', (req, res) => {
     const { WorkerId, DocumentClass } = req.params;
   
     // Query the database based on WorkerId and DocumentClass
-    pool.query(
+    connection.query(
       'SELECT Document, DocumentType, DocumentName FROM workerdocument WHERE WorkerId = ? AND DocumentClass = ?',
       [WorkerId, DocumentClass],
       (error, results) => {
