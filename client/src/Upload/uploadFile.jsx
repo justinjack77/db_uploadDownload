@@ -17,6 +17,7 @@ const UploadFile = () => {
   //     })
   //     .catch((err) => console.log(err));
   // }, []);
+  
   useEffect(() => {
     api
       .get("/")

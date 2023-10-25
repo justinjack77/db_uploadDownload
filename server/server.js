@@ -6,12 +6,14 @@ import mysql from 'mysql';
 import express from 'express';
 import multer from 'multer';
 import path from 'path';
+import fileUpload from 'express-fileupload';
 
 
 const app = express();
 app.use(express.json());
 app.use(cors()); 
 app.use(express.static('public'))
+
 
 
 const db = mysql.createConnection({
@@ -21,6 +23,17 @@ const db = mysql.createConnection({
     database: "file_db",
 })
 
+db.connect(err => {
+    if (err) {
+      console.error('Error connecting to MySQL database: ' + err.stack);
+      return;
+    }
+    console.log('Connected to MySQL database as id ' + db.threadId);
+  });
+  
+  // Middleware
+  app.use(express.json());
+  app.use(fileUpload());
 // const storage = multer.diskStorage({
 //     destination: (req, file,cb) => {
 //         cb(null,'public/worker/images')
@@ -277,6 +290,53 @@ app.get("/users",(req,res)=>{
     )
 })
 
-app.listen(5001,()=> {
-    console.log("Server is runing port 5001....")
-})
+
+
+
+
+
+
+///////
+
+// const express = require('express');
+// const mysql = require('mysql');
+// const fileUpload = require('express-fileupload');
+// const app = express();
+
+// // MySQL Connection
+// const db = mysql.createConnection({
+//   host: 'localhost',
+//   user: 'username',
+//   password: 'password',
+//   database: 'your_database_name'
+// });
+
+
+
+// API Endpoint to Download Document
+app.get('/download/:workerId/:DocumentClass', (req, res) => {
+  const { workerId, documentType } = req.params;
+  const query = `SELECT workerdocument FROM workerdocument WHERE WorkerId = ? AND DocumentClass = ?`;
+
+  db.query(query, [workerId, documentType], (err, result) => {
+    if (err) {
+      res.status(500).json({ error: err.message });
+      return;
+    }
+
+    if (result.length === 0) {
+      res.status(404).json({ error: 'Document not found.' });
+      return;
+    }
+
+    const document = result[0].Document;
+    res.contentType('application/octet-stream');
+    res.send(document);
+  });
+});
+
+// Start the server
+const PORT = 5001;
+app.listen(PORT, () => {
+  console.log(`Server is running on port ${PORT}`);
+});
