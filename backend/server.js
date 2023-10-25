@@ -40,7 +40,7 @@ const connection = mysql.createPool({
     }
   });
 
-// API endpoint to handle document download
+
 // API endpoint to handle document download
 app.get('/download/:WorkerId/:DocumentClass', (req, res) => {
     const { WorkerId, DocumentClass } = req.params;
